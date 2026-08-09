@@ -178,3 +178,8 @@ npx serve dist/phenoboard/browser
 ```
 
 Here we can use dev tools to see if the class is being used correctly.
+
+## Search for circular dependencies
+```bash
+npx madge --circular --extensions ts --ts-config tsconfig.base.json src/
+```

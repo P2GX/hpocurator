@@ -1,6 +1,6 @@
 import { afterNextRender, Component, ElementRef, input, output, signal, viewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { TransformLabels, TransformType } from '@workspace/ui';
+import { TransformLabels, TransformType } from '../models/transform-operations';
 import { SubmenuPositionDirective } from './submenu-position.directive';
 
 
@@ -38,7 +38,6 @@ export class ColumnContextMenuComponent {
 
 constructor() {
     afterNextRender(() => {
-       console.log('menuEl found:', this.menuEl().nativeElement);
       const rect = this.menuEl().nativeElement.getBoundingClientRect();
       const rawX = this.x() ?? 0;
       const rawY = this.y() ?? 0;

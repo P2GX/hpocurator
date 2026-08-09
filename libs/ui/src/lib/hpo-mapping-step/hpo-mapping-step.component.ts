@@ -1,7 +1,9 @@
 import { Component, input, output, effect, viewChild, ElementRef, signal } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
-import { CellValue, HpoMappingResult, TableCellEditorComponent } from "@workspace/ui";
+import { TableCellEditorComponent } from "../table-cell-editor/table-cell-editor.component";
+import { CellValue, HpoMappingResult } from "../models/hpo_term_dto";
+
 
 type QuickState = 'Observed' | 'Excluded' | 'Na';
 

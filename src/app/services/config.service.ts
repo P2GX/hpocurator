@@ -9,18 +9,16 @@ import {
   DiseaseData,
   CohortType,
   HpoGroupMap,
-  CurationEvent,
 } from '../../../libs/ui/src/lib/models/cohort_dto';
-import { HpoTermData, HpoTermDuplet } from '../../../libs/ui/src/lib/models/hpo_term_dto';
+import { HpoTermData, HpoTermDuplet, MinedCell, MiningConcept, OntologyMatch } from '../../../libs/ui/src/lib/models/hpo_term_dto';
 import {
   HgvsVariant,
   IntergenicHgvsVariant,
   StructuralVariant,
   VariantDto,
 } from '../../../libs/ui/src/lib/models/variant_dto';
-import { ColumnTableDto, EtlDto } from '@workspace/ui';
+
 import { RepoQc } from '../models/repo_qc';
-import { OntologyMatch, MinedCell, MiningConcept } from '@workspace/ui';
 import { ComparisonReport } from '../models/comparison';
 import { PpktSaveCheckResult } from '../models/status_dto';
 import { ask } from '@tauri-apps/plugin-dialog';
@@ -31,6 +29,7 @@ import {
   NotificationService,
 } from 'ng-hpo-uikit';
 import { catchError, from, Observable, of } from 'rxjs';
+import { ColumnTableDto, EtlDto } from 'libs/ui/src/lib/models/transform-operations';
 
 @Injectable({
   providedIn: 'root',
