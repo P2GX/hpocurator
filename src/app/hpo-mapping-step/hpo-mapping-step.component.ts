@@ -162,8 +162,10 @@ export class HpoMappingStepComponent {
   handleAgeSaved(newOnset: string): void {
     const value = this.activeEditValue();
     if (value) {
-      const current = this.currentCellValue(value);
-      this.valueToCellMap[value] = { ...current, type: 'OnsetAge', data: newOnset };
+      if (newOnset.trim().toLowerCase() !== 'na') {
+        const current = this.currentCellValue(value);
+        this.valueToCellMap[value] = { ...current, type: 'OnsetAge', data: newOnset };
+      }
     }
     this.showAgeDialog.set(false);
   }
