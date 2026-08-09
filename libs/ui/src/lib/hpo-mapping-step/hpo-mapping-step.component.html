@@ -4,49 +4,71 @@
       <h3>Map Value Symbols for: {{ header() }}</h3>
       <button class="close-btn" type="button" (click)="cancel()">&times;</button>
     </header>
-    
+
     <main class="modal-body">
-      <p class="hpo-badge">Term: <strong>{{ hpoLabel() }}</strong> <code>{{ hpoId() }}</code></p>     
+      <p class="hpo-badge">Term: <strong>{{ hpoLabel() }}</strong> <code>{{ hpoId() }}</code></p>
       <div class="mapping-grid">
         @for (value of uniqueValues(); track value) {
           <div class="mapping-card">
             <div class="card-header">
               <span class="raw-value" [title]="value">{{ value || '(Empty String)' }}</span>
             </div>
-            
+
             <div class="tile-options-group">
-              <button 
+              <button
                 type="button"
                 class="tile-btn observed-tile"
-                [class.active]="valueToStateMap[value] === 'observed'"
-                (click)="valueToStateMap[value] = 'observed'">
+                [class.active]="currentCellValue(value).type === 'Observed'"
+                (click)="setQuickState(value, 'Observed')">
                 <span class="tile-icon">✓</span>
                 <span class="tile-label">Observed</span>
               </button>
 
-              <button 
+              <button
                 type="button"
                 class="tile-btn excluded-tile"
-                [class.active]="valueToStateMap[value] === 'excluded'"
-                (click)="valueToStateMap[value] = 'excluded'">
+                [class.active]="currentCellValue(value).type === 'Excluded'"
+                (click)="setQuickState(value, 'Excluded')">
                 <span class="tile-icon">✕</span>
                 <span class="tile-label">Excluded</span>
               </button>
 
-              <button 
+              <button
                 type="button"
                 class="tile-btn na-tile"
-                [class.active]="valueToStateMap[value] === 'na'"
-                (click)="valueToStateMap[value] = 'na'">
+                [class.active]="currentCellValue(value).type === 'Na'"
+                (click)="setQuickState(value, 'Na')">
                 <span class="tile-icon">−</span>
                 <span class="tile-label">N/A</span>
               </button>
+
+              <button
+                type="button"
+                class="tile-btn detail-tile"
+                [class.active]="currentCellValue(value).type === 'OnsetAge'"
+                (click)="toggleEditor(value)">
+                <span class="tile-icon">🕒</span>
+                @let cell = currentCellValue(value);
+                <span class="tile-label">
+                  {{ cell.type === 'OnsetAge' ? ('Onset: ' + cell.data) : 'Details…' }}
+                </span>
+              </button>
             </div>
+
+            @if (isEditingActive(value)) {
+              <div class="card-detail-editor">
+                <app-hpo-annotation-panel
+                  [cellData]="currentCellValue(value)"
+                  [columnTitle]="header()"
+                  (dataChanged)="onCellDetailChanged(value, $event)"
+                />
+              </div>
+            }
           </div>
         }
       </div>
     </main>
-    
+
     <footer class="modal-footer">
       <button class="btn-secondary" type="button" (click)="cancel()">Cancel</button>
       <button class="btn-primary" type="button" (click)="confirm()">Apply Transformation</button>

@@ -38,7 +38,7 @@ import {
 import { EtlSessionService } from '../services/etl_session_service';
 import { catchError, from, Observable, of } from 'rxjs';
 import { IconComponent, NotificationService } from 'ng-hpo-uikit';
-import { HpoTermDuplet } from '../../../libs/ui/src/lib/models/hpo_term_dto';
+import { CellValue, HpoTermDuplet } from '../../../libs/ui/src/lib/models/hpo_term_dto';
 import { MultiHpoComponent } from '../multihpo/multihpo.component';
 import {
   AddConstantColumnDialogComponent,
@@ -519,11 +519,11 @@ export class TableEditorComponent {
           errorMessage: 'User cancelled mapping',
         };
       }
-      const newValue = mapping.valueToStateMap[cell.original];
-      if (newValue) {
+      const newValue: CellValue = mapping.valueToStateMap[cell.original];
+      if (newValue !== undefined) {
         return {
           ...cell,
-          current: newValue,
+          current: JSON.stringify(newValue),
           status: EtlCellStatus.Transformed,
           errorMessage: undefined,
         };
@@ -1565,7 +1565,7 @@ export class TableEditorComponent {
     }
   }
 
-  /** Apply a mapping for a column with a single HPO term */
+  /** Apply a mapping for a column with a single HPO term. This function is called 
   applyHpoMapping(colIndex: number, mapping: HpoMappingResult): void {
     const dto = this.etl_service.etlDto();
     if (!dto) {
@@ -1606,7 +1606,7 @@ export class TableEditorComponent {
       };
     });
     this.etl_service.updateColumns(newColumns);
-  }
+  }*/
 
   /** Retrieve the single HPO term associated with a column header */
   getSingleHpoTerm(header: EtlColumnHeader): HpoTermDuplet {

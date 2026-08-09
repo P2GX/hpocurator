@@ -32,7 +32,7 @@ import { OverlayModule, CdkOverlayOrigin } from '@angular/cdk/overlay';
 import { HelpService } from '../services/help.service';
 import {
   TableCellEditorComponent,
-} from '../util/table-cell-editor/table-cell-editor.component';
+} from '../../../libs/ui/src/lib/table-cell-editor/table-cell-editor.component';
 import { CohortWorkflowService } from '../services/cohort-workflow.service';
 import { WorkflowError } from '../services/cohort-workflow.errors';
 import { CohortViewModel } from '../services/cohort-view-model.service';

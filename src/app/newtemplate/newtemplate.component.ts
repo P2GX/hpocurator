@@ -7,6 +7,7 @@ import {
   CohortData,
   CohortType,
   GeneTranscriptData,
+  CohortEntry,
 } from '../../../libs/ui/src/lib/models/cohort_dto';
 import { RouterLink } from '@angular/router';
 import { ConfigService } from '../services/config.service';
@@ -19,16 +20,7 @@ import { DisplayMeldedComponent } from './display-melded.component';
 import { AppStatusService } from '../services/app_status_service';
 import { PmidService } from '../services/pmid_service';
 
-export interface CohortEntry {
-  diseaseId: string;
-  diseaseLabel: string;
-  cohortAcronym: string;
-  hgnc: string;
-  symbol: string;
-  transcript: string;
-  // Used for Oligogenic/Digenic additional genes
-  geneTranscriptList?: GeneTranscriptData[];
-}
+
 
 export function toDiseaseData(entry: CohortEntry): DiseaseData {
   const gtd: GeneTranscriptData = {

@@ -1,7 +1,3 @@
-import { CohortData, GeneTranscriptData } from "./cohort_dto";
-
-
-
 export interface StructuralType {
     label: string;
     id: string;
@@ -167,10 +163,3 @@ export function displaySv(sv: StructuralVariant, validated: boolean): VariantDto
 }
 
 
-/* This interface is needed to pass data to the GeneEditComponent. */
-export interface GeneEditDialogData {
-  alleleKey?: string;
-  allelecount: number;
-  gtData: GeneTranscriptData[];
-  cohort: CohortData;
-}

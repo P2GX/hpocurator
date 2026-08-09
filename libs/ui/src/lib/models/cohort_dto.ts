@@ -3,7 +3,7 @@
 */
 
 import { CellValue, HpoTermDuplet } from "./hpo_term_dto";
-import { HgvsVariant, IntergenicHgvsVariant, StructuralVariant } from "./variant_dto";
+import type { HgvsVariant, IntergenicHgvsVariant, StructuralVariant } from "./variant_dto";
 
 export type HpoGroupMap = Record<string, HpoTermDuplet[]>; 
 
@@ -88,6 +88,7 @@ export function createCurationEvent(orcid: string): CurationEvent {
 
 export type CohortType = 'mendelian' | 'melded' | 'digenic';
 
+
 export interface CohortData {
     cohortType: CohortType,
     diseaseList: DiseaseData[],
@@ -130,9 +131,21 @@ export function newDiseaseData(
     };
 }
 
-export { CellValue };
+
 
 export interface SourcePmid {
   pmid: string,
   title: string,
+}
+
+
+export interface CohortEntry {
+  diseaseId: string;
+  diseaseLabel: string;
+  cohortAcronym: string;
+  hgnc: string;
+  symbol: string;
+  transcript: string;
+  // Used for Oligogenic/Digenic additional genes
+  geneTranscriptList?: GeneTranscriptData[];
 }

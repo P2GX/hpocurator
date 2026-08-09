@@ -6,7 +6,6 @@
     </header>
     
     <main class="modal-body">
-      <!-- Section 1: Dynamic Top Match Recommendation -->
       @if (bestMatch(); as match) {
         <div class="suggestion-box">
           <span class="section-label">Recommended Match</span>
@@ -22,7 +21,6 @@
         </div>
       }
 
-      <!-- Section 2: Autocomplete Provider Lookup -->
       <div class="autocomplete-section">
         <span class="section-label">
           {{ bestMatch() ? 'Or search alternative term:' : 'Search HPO Term:' }}

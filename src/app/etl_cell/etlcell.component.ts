@@ -1,17 +1,27 @@
 import {
   Component,
   computed,
-  effect,
-  EventEmitter,
   HostListener,
   input,
-  Output,
   output,
   signal,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { EtlCellValue, EtlCellStatus } from '@workspace/ui';
 import { EtlCellEditDialogComponent, CellEditData } from './etl-cell-edit-dialog.component';
+
+interface ContextMenuRequest {
+  event: MouseEvent;
+  cell: EtlCellValue;
+  rowIndex: number;
+  colIndex: number;
+}
+
+interface CellEditPayload {
+  rowIndex: number;
+  colIndex: number;
+  newValue: string;
+}
 
 @Component({
   selector: 'etl-cell',
@@ -23,29 +33,34 @@ export class EtlCellComponent {
   cell = input.required<EtlCellValue>();
   rowIndex = input.required<number>();
   colIndex = input.required<number>();
-  edited = output<{ rowIndex: number; colIndex: number; newValue: string }>();
-  current = signal('');
-  status = signal<EtlCellStatus.Raw | EtlCellStatus.Transformed | EtlCellStatus.Error | EtlCellStatus.Ignored
-  >(EtlCellStatus.Raw);
-  error = signal<string | undefined>(undefined);
+  edited = output<CellEditPayload>();
+  contextMenuRequested = output<ContextMenuRequest>();
+
+  current = computed(() => this.cell().current ?? '');
+  status = computed(() => this.cell().status);
+  error = computed(() => this.cell().error ?? undefined);
+  original = computed(() => this.cell().original);
 
   editDialogData = signal<CellEditData | null>(null);
 
-  constructor() {
-    effect(() => {
-      const val = this.cell();
-      this.current.set(val.current || '');
-      this.status.set(val.status);
-      this.error.set(val.error || undefined);
-    });
-  }
+  readonly cellClass = computed(() => {
+    switch (this.status()) {
+      case EtlCellStatus.Raw: return 'cell-raw';
+      case EtlCellStatus.Transformed: return 'cell-transformed';
+      case EtlCellStatus.Error: return 'cell-error';
+      case EtlCellStatus.Ignored: return 'cell-ignored';
+      default: return '';
+    }
+  });
 
-  @Output() contextMenuRequested = new EventEmitter<{
-    event: MouseEvent;
-    cell: EtlCellValue;
-    rowIndex: number;
-    colIndex: number;
-  }>();
+   readonly tooltipText = computed(() => {
+    const orig = this.original();
+    const curr = this.current();
+    const err = this.error();
+    if (err) return `error: ${err}`;
+    if (curr.length === 0) return `${orig} (raw)`;
+    return `original: ${orig}\ntransformed: ${curr}`;
+  });
 
   @HostListener('contextmenu', ['$event'])
   onRightClick(event: MouseEvent) {
@@ -62,43 +77,27 @@ export class EtlCellComponent {
 
   /** Apply a transformed value */
   setTransformed(newValue: string) {
-    this.current.set(newValue);
-    this.status.set(EtlCellStatus.Transformed);
-    this.error.set(undefined);
-    this.emitChange();
+    this.edited.emit({rowIndex: this.rowIndex(), colIndex: this.colIndex(), newValue })
   }
 
-  /** Apply an error value */
+  /** Apply an error value 
   setError(errorMessage: string) {
     this.status.set(EtlCellStatus.Error);
     this.error.set(errorMessage);
     this.emitChange();
-  }
+  }*/
 
   /** Reset to raw */
   resetRaw() {
-    this.current.set('');
-    this.status.set(EtlCellStatus.Raw);
-    this.error.set(undefined);
-    this.emitChange();
+    this.edited.emit({ rowIndex: this.rowIndex(), colIndex: this.colIndex(), newValue: '' });
   }
 
-  /** Emit change to parent component */
-  private emitChange() {
-    this.edited.emit({
-      rowIndex: this.rowIndex(),
-      colIndex: this.colIndex(),
-      newValue: this.current(),
-    });
+   /** Open the manual edit dialog for this cell. */
+  editManually(): void {
+    this.editDialogData.set({ original: this.original(), current: this.current() });
   }
 
-  /** Open manual edit dialog */
-  editManually() {
-    this.editDialogData.set({
-      original: this.original(),
-      current: this.current(),
-    });
-  }
+
 
   onDialogSaved(newValue: string) {
     this.editDialogData.set(null);
@@ -109,35 +108,4 @@ export class EtlCellComponent {
     this.editDialogData.set(null);
   }
 
-  readonly cellClass = computed(() => {
-    const currentStatus = this.status();
-    switch (currentStatus) {
-      case EtlCellStatus.Raw:
-        return 'cell-raw';
-      case EtlCellStatus.Transformed:
-        return 'cell-transformed';
-      case EtlCellStatus.Error:
-        return 'cell-error';
-      case EtlCellStatus.Ignored:
-        return 'cell-ignored';
-      default:
-        return '';
-    }
-  });
-
-  readonly original = computed(() => this.cell().original);
-
-  readonly tooltipText = computed(() => {
-    const origVal = this.original();
-    const currentVal = this.current();
-    const errorVal = this.error();
-    if (errorVal) {
-      return `error: ${errorVal}`;
-    }
-    if (currentVal.length == 0) {
-      return `${origVal} (raw)`;
-    } else {
-      return `original: ${origVal}\ntransformed: ${currentVal}`;
-    }
-  });
 }

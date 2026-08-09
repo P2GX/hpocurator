@@ -271,10 +271,9 @@ fn create_new_melded_cohort(
 ) -> Result<CohortData, String> {
     let singleton = state.phenoboard.lock()
         .map_err(|_| "Failed to acquire lock on HPO State".to_string())?;
-    let hpo_version = match singleton.get_hpo() {
-        Some(hpo) => hpo.version().to_string(),
-        None => { return  Err("HPO not initialized".to_string());}
-    };
+    let hpo = singleton.get_hpo()
+        .ok_or_else(|| "HPO not initialized".to_string())?;
+    let hpo_version = hpo.version().to_string();
     Ok(ga4ghphetools::factory::create_new_melded_cohort(diseases, acronym, &hpo_version))
 }
 
@@ -359,12 +358,8 @@ fn validate_template(
     cohort_dto: CohortData) -> Result<(), String> {
    let singleton = state.phenoboard.lock()
         .map_err(|_| "Failed to acquire lock on HPO State".to_string())?;
-    let hpo = match singleton.get_hpo() {
-        Some(hpo) => hpo.clone(),
-        None => {
-            return Err("Could not create CohortData because HPO was not initialized".to_string());
-        },
-    };
+    let hpo = singleton.get_hpo()
+        .ok_or_else(|| "Could not create CohortData because HPO was not initialized".to_string())?;
     ga4ghphetools::factory::qc_assessment(hpo.clone(), &cohort_dto).map_err(|e| e.to_string())
 }
 
@@ -374,12 +369,8 @@ fn sanitize_cohort_data(
     cohort_dto: CohortData) -> Result<CohortData, String> {
     let singleton = state.phenoboard.lock()
         .map_err(|_| "Failed to acquire lock on HPO State".to_string())?;
-    let hpo = match singleton.get_hpo() {
-        Some(hpo) => hpo.clone(),
-        None => {
-            return Err("HPO not initialized".to_string());
-        },
-    };
+    let hpo = singleton.get_hpo()
+        .ok_or_else(|| "HPO not initialized".to_string())?;
     ga4ghphetools::factory::sanitize_cohort_data(hpo.clone(), &cohort_dto)
 }
 
@@ -406,12 +397,8 @@ fn sort_cohort_by_rows(dto: CohortData)
 async fn check_existing_phenopackets(state: tauri::State<'_, Arc<AppState>>) -> Result<PpktSaveCheckResult, String> {
     let singleton = state.phenoboard.lock()
         .map_err(|_| "Failed to acquire lock on HPO State".to_string())?;
-     let out_dir = match singleton.get_phenopackets_output_dir() {
-            Ok(dir) => dir,
-            Err(e) =>  { return Err(e);},
-        };
+    let out_dir =  singleton.get_phenopackets_output_dir()?;
     let path = std::path::PathBuf::from(&out_dir);
-
     if !path.exists() {
         return Err(format!("Could not find directory at {:?}", path));
     }
@@ -487,10 +474,8 @@ fn add_new_row_to_cohort(
 -> Result<CohortData, String> {
     let singleton = state.phenoboard.lock()
         .map_err(|_| "Failed to acquire lock on HPO State".to_string())?;
-    let hpo = match singleton.get_hpo(){
-        Some(ontology) => ontology.clone(),
-        None => { return Err("HPO not initialized".to_string()); },
-    };
+    let hpo = singleton.get_hpo()
+        .ok_or_else(|| "HPO not initialized".to_string())?;
     ga4ghphetools::factory::add_new_row_to_cohort(hpo, individual_data, hpo_annotations, variant_key_list, cohort_data)
 }
 
@@ -711,13 +696,9 @@ async  fn get_cohort_data_from_etl_dto(
 ) -> Result<CohortData, String> {
     let singleton = state.phenoboard.lock()
         .map_err(|_| "Failed to acquire lock on HPO State".to_string())?;
-    let hpo = match singleton.get_hpo() {
-        Some(hpo) => hpo,
-        None => {
-            return Err("Could not create CohortData because HPO was not initialized".to_string());
-        },
-    };
-    ga4ghphetools::etl::get_cohort_data_from_etl_dto(hpo, dto)
+    let hpo = singleton.get_hpo()
+        .ok_or_else(|| "Could not create CohortData because HPO was not initialized".to_string())?;
+    ga4ghphetools::etl::get_cohort_data_from_etl_dto(hpo.clone(), dto)
 }
 
 
@@ -731,12 +712,8 @@ async fn merge_cohort_data_from_etl_dto(
 ) -> Result<CohortData, String> {
     let singleton = state.phenoboard.lock()
         .map_err(|_| "Failed to acquire lock on HPO State".to_string())?;
-    let hpo = match singleton.get_hpo() {
-        Some(hpo) => hpo.clone(),
-        None => {
-            return Err("Could not create CohortData because HPO was not initialized".to_string());
-        },
-    };
+    let hpo = singleton.get_hpo()
+        .ok_or_else(|| "Could not create CohortData because HPO was not initialized".to_string())?;
     ga4ghphetools::factory::merge_cohort_data_from_etl_dto(previous, transformed, hpo)
 }
 
@@ -747,12 +724,8 @@ async fn get_hpo_terms_by_toplevel(
 )-> Result<HashMap<String, Vec<HpoTermDuplet>>, String> {
     let singleton = state.phenoboard.lock()
         .map_err(|_| "Failed to acquire lock on HPO State".to_string())?;
-    let hpo = match singleton.get_hpo() {
-        Some(hpo) => hpo.clone(),
-        None => {
-            return Err("Could not create CohortData because HPO was not initialized".to_string());
-        },
-    };
+    let hpo = singleton.get_hpo()
+        .ok_or_else(|| "Could not create CohortData because HPO was not initialized".to_string())?;
     ga4ghphetools::hpo::get_hpo_terms_by_toplevel(cohort, hpo)
 }
 
@@ -946,13 +919,8 @@ async fn compare_two_phenopackets(
 ) -> Result<ComparisonReport, String> {
     let singleton = state.phenoboard.lock()
         .map_err(|_| "Failed to acquire lock on phenoboard State".to_string())?;
-    match singleton.get_hpo() {
-        Some(hpo) => {
-            ga4ghphetools::repo::compare_two_phenopackets(path1, path2, hpo.clone())
-        },
-        None => {
-            Err(format!("Could not acquire HPO reference"))
-        },
-    } 
+    let hpo = singleton.get_hpo()
+        .ok_or_else(|| "Could not acquire HPO reference".to_string())?;
+    ga4ghphetools::repo::compare_two_phenopackets(path1, path2, hpo.clone())
 }
 

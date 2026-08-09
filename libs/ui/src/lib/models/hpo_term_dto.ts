@@ -84,7 +84,7 @@ export type HpoMappingRow = HpoMappingEntry[];
 export interface HpoMappingResult {
   hpoLabel: string;
   hpoId: string;
-  valueToStateMap: { [key: string]: string };
+  valueToStateMap: { [key: string]: CellValue };
 }
 
 /* A match for the HPO autocomplete function (Rust version from the fenominal library)*/

@@ -1,8 +1,8 @@
 import { Component, input, computed, output, inject, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { HpoModifierMenuComponent } from '../modifier/hpo-modifier-menu';
-import { CellValue } from '../../../../libs/ui/src/lib/models/hpo_term_dto';
+import { HpoModifierMenuComponent } from '../../../../../src/app/util/modifier/hpo-modifier-menu';
+import { CellValue } from '../models/hpo_term_dto';
 import { NotificationService } from 'ng-hpo-uikit';
 import { AgeService } from 'ng-hpo-uikit';
 import { HpoModifierService } from 'src/app/services/hpo_modifier_service';

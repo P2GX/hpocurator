@@ -16,10 +16,10 @@ import {
   FormsModule,
 } from '@angular/forms';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { noWhitespaceValidator, noLeadingTrailingSpacesValidator } from '@workspace/ui';
+import { noWhitespaceValidator, noLeadingTrailingSpacesValidator, CohortEntry } from '@workspace/ui';
 import { HelpButtonComponent } from 'ng-hpo-uikit';
 import { ConfigService } from '../services/config.service';
-import { CohortEntry } from '../newtemplate/newtemplate.component';
+
 
 export interface CohortDialogData {
   title: string;
