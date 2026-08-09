@@ -1,4 +1,4 @@
-import { Component, ElementRef, ViewChild, afterNextRender, input, output } from '@angular/core';
+import { Component, ElementRef, OnInit, ViewChild, afterNextRender, input, output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { IconComponent } from 'ng-hpo-uikit';
 
@@ -14,7 +14,7 @@ export interface CellEditData {
   templateUrl: './etl-cell-edit-dialog.component.html',
   styleUrl: './etl-cell-edit-dialog.component.scss',
 })
-export class EtlCellEditDialogComponent {
+export class EtlCellEditDialogComponent implements OnInit {
   data = input.required<CellEditData>();
   saved = output<string>();
   cancelled = output<void>();
@@ -26,10 +26,13 @@ export class EtlCellEditDialogComponent {
 
   constructor() {
     afterNextRender(() => {
-      this.currentValue = this.data().current;
       this.dialogEl?.nativeElement.showModal();
       this.inputEl?.nativeElement.focus();
     });
+  }
+
+  ngOnInit(): void {
+     this.currentValue = this.data().current;
   }
 
   save() {

@@ -67,7 +67,7 @@ import {
   EtlCellEditDialogComponent,
 } from '../etl_cell/etl-cell-edit-dialog.component';
 import { HpoPopupDialogComponent } from '@workspace/ui';
-import { HpoMappingStepComponent } from '@workspace/ui';
+import { HpoMappingStepComponent } from '../hpo-mapping-step/hpo-mapping-step.component';
 import { TableProgressBarComponent } from '@workspace/ui';
 import { HpoMiningDialogService } from '../services/hpo-mining-dialog.service';
 

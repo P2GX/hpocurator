@@ -46,6 +46,11 @@ export class TableCellEditorComponent {
         this.onsetText.set(data.data);
       }
     });
+    effect(() => {
+      const o = this.showOnsetPicker();
+      console.log(`showOnsetPicker ${o}`)
+    });
+    
   }
 
   toggleOnsetSelection(): void {
@@ -112,6 +117,7 @@ export class TableCellEditorComponent {
 
   /* The parent component will receive this signal and then open the new Age Dialog itself */
   openAddAgeDialog(): void {
+    console.log("openAddAgeDialog in table-cell-editor-component")
     this.showOnsetPicker.set(true);
     this.requestNewOnset.emit();
   }

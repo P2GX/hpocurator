@@ -55,14 +55,39 @@
               </button>
             </div>
 
-            @if (isEditingActive(value)) {
-              <div class="card-detail-editor">
-                <app-hpo-annotation-panel
-                  [cellData]="currentCellValue(value)"
-                  [columnTitle]="header()"
-                  (dataChanged)="onCellDetailChanged(value, $event)"
-                />
-              </div>
+            @if (activeEditValue(); as value) {
+              <dialog #detailDialog class="cell-detail-modal" (cancel)="closeEditor()" (close)="closeEditor()">
+                <div class="modal-content">
+                  <header class="modal-header">
+                    <span>Edit details for "{{ value }}"</span>
+                    <button type="button" class="close-btn" (click)="closeEditor()">&times;</button>
+                  </header>
+
+                  <app-hpo-annotation-panel
+                    [cellData]="currentCellValue(value)"
+                    [columnTitle]="header()"
+                    (dataChanged)="onCellDetailChanged(value, $event)"
+                    (requestNewOnset)="openGlobalAgeDialog()"
+                  />
+
+                  @if (showAgeDialog()) {
+                    <div class="backdrop-modal" (click)="closeAgeDialog()"></div>
+                    <div class="modal-container" (click)="$event.stopPropagation()">
+                      @let cell = currentCellValue(value);
+                      <app-addage
+                        [current]="cell.type === 'OnsetAge' ? cell.data : ''"
+                        (saved)="handleAgeSaved($event)"
+                        (cancelled)="closeAgeDialog()"
+                      />
+                    </div>
+                  }
+
+                  <footer class="modal-footer">
+                    <button type="button" class="btn-secondary" (click)="cancelEditor()">Cancel</button>
+                    <button type="button" class="btn-primary" (click)="confirmEditor()">Confirm</button>
+                  </footer>
+                </div>
+              </dialog>
             }
           </div>
         }

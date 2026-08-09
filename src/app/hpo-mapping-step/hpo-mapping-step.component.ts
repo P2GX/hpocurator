@@ -1,9 +1,9 @@
 import { Component, input, output, effect, viewChild, ElementRef, signal } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
-import { TableCellEditorComponent } from "../table-cell-editor/table-cell-editor.component";
-import { CellValue, HpoMappingResult } from "../models/hpo_term_dto";
-
+import { TableCellEditorComponent } from "../../../libs/ui/src/lib/table-cell-editor/table-cell-editor.component";
+import { CellValue, HpoMappingResult } from "../../../libs/ui/src/lib/models/hpo_term_dto";
+import { AddageComponent } from "../addages/addage.component";
 
 type QuickState = 'Observed' | 'Excluded' | 'Na';
 
@@ -19,7 +19,7 @@ type QuickState = 'Observed' | 'Excluded' | 'Na';
 @Component({
   selector: 'app-hpo-mapping-step',
   standalone: true,
-  imports: [CommonModule, FormsModule, TableCellEditorComponent],
+  imports: [AddageComponent, CommonModule, FormsModule, TableCellEditorComponent],
   templateUrl: './hpo-mapping-step.component.html',
   styleUrl: './hpo-mapping-step.component.scss'
 })
@@ -28,6 +28,8 @@ export class HpoMappingStepComponent {
   hpoLabel = input.required<string>();
   hpoId = input.required<string>();
   uniqueValues = input.required<string[]>();
+  private detailDialogEl = viewChild<ElementRef<HTMLDialogElement>>('detailDialog');
+  showAgeDialog = signal(false);
 
   OBSERVED_HINTS = new Set([
     '+', 'yes', 'y', 'true', '1', 'present', 'pos', 'positive', 'obs', 'observed'
@@ -75,6 +77,16 @@ export class HpoMappingStepComponent {
         }
       }
     });
+    effect(() => {
+      const dialog = this.detailDialogEl()?.nativeElement;
+      const shouldBeOpen = this.activeEditValue() !== null;
+      if (!dialog) return;
+      if (shouldBeOpen && !dialog.open) {
+        dialog.showModal();
+      } else if (!shouldBeOpen && dialog.open) {
+        dialog.close();
+      }
+    });
   }
 
   /** Quick-pick button handler: sets a simple status, discarding any prior onset/modifiers for this value */
@@ -82,8 +94,30 @@ export class HpoMappingStepComponent {
     this.valueToCellMap[value] = { type: state };
   }
 
+  private editSnapshot: CellValue | null = null;
   toggleEditor(value: string): void {
-    this.activeEditValue.update(current => (current === value ? null : value));
+    this.activeEditValue.update(current => {
+      if (current === value) return null;
+      this.editSnapshot = { ...this.currentCellValue(value) }; // snapshot before editing
+      return value;
+    });
+  }
+
+  cancelEditor(): void {
+    const value = this.activeEditValue();
+    if (value && this.editSnapshot) {
+      this.valueToCellMap[value] = this.editSnapshot;
+    }
+    this.activeEditValue.set(null);
+  }
+
+  confirmEditor(): void {
+    // changes already live in valueToCellMap
+    this.activeEditValue.set(null);
+  }
+
+  closeEditor(): void {
+    this.activeEditValue.set(null);
   }
 
   isEditingActive(value: string): boolean {
@@ -118,5 +152,23 @@ export class HpoMappingStepComponent {
 
   cancel(): void {
     this.cancelled.emit();
+  }
+
+  openGlobalAgeDialog(): void {
+    console.log("openGlobalAgeDialog coming from request new onset")
+    this.showAgeDialog.set(true);
+  }
+
+  handleAgeSaved(newOnset: string): void {
+    const value = this.activeEditValue();
+    if (value) {
+      const current = this.currentCellValue(value);
+      this.valueToCellMap[value] = { ...current, type: 'OnsetAge', data: newOnset };
+    }
+    this.showAgeDialog.set(false);
+  }
+
+  closeAgeDialog(): void {
+    this.showAgeDialog.set(false);
   }
 }
