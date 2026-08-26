@@ -183,3 +183,11 @@ Here we can use dev tools to see if the class is being used correctly.
 ```bash
 npx madge --circular --extensions ts --ts-config tsconfig.base.json src/
 ```
+
+
+## Get the latest version of the ng-hpo-uikit
+
+```bash
+npm install github:P2GX/ng-hpo-uikit#dist-build --force
+```
+

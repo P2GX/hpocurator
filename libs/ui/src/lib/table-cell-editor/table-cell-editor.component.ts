@@ -1,11 +1,11 @@
 import { Component, input, computed, output, inject, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { HpoModifierMenuComponent } from '../../../../../src/app/util/modifier/hpo-modifier-menu';
-import { CellValue } from '../models/hpo_term_dto';
+import { CellValue, HpoTermDuplet } from '../models/hpo_term_dto';
 import { NotificationService } from 'ng-hpo-uikit';
 import { AgeService } from 'ng-hpo-uikit';
-import { HpoModifierService } from 'src/app/services/hpo_modifier_service';
+//import { HpoModifierService } from 'src/app/services/hpo_modifier_service';
+import { HpoModifierMenuComponent } from '../modifier-menu/hpo-modifier-menu';
 
 @Component({
   selector: 'app-hpo-annotation-panel',
@@ -20,7 +20,12 @@ export class TableCellEditorComponent {
   dataChanged = output<CellValue>();
   private notificationService = inject(NotificationService);
   private ageService = inject(AgeService);
-  protected modifierService = inject(HpoModifierService);
+  //protected modifierService = inject(HpoModifierService);
+  //filterModifiers = (query: string) => this.modifierService.filterLocalTerms(query);
+  //initModifiers = () => this.modifierService.ensureModifiersLoaded();
+  filterModifiersFn = input.required<(query: string) => HpoTermDuplet[]>();
+  initModifiersFn = input<() => Promise<void>>(() => Promise.resolve());
+  getModifierLabelFn = input.required<(modId: string) => string>();
   // The parent component will open the new-onset dialog and update the CellValue
   // this avoids race condition with closing the dialog and transmitting a new CellValue
   requestNewOnset = output<void>();
@@ -46,11 +51,6 @@ export class TableCellEditorComponent {
         this.onsetText.set(data.data);
       }
     });
-    effect(() => {
-      const o = this.showOnsetPicker();
-      console.log(`showOnsetPicker ${o}`)
-    });
-    
   }
 
   toggleOnsetSelection(): void {
@@ -117,7 +117,6 @@ export class TableCellEditorComponent {
 
   /* The parent component will receive this signal and then open the new Age Dialog itself */
   openAddAgeDialog(): void {
-    console.log("openAddAgeDialog in table-cell-editor-component")
     this.showOnsetPicker.set(true);
     this.requestNewOnset.emit();
   }

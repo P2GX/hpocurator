@@ -1,9 +1,8 @@
 import { Component, inject, OnInit, input, output, signal, ElementRef, HostListener, ViewChild } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { HpoModifierService } from '../../services/hpo_modifier_service';
-import { HpoTermDuplet } from '../../../../libs/ui/src/lib/models/hpo_term_dto';
 import { IconComponent } from "ng-hpo-uikit";
+import { HpoTermDuplet } from '../models/hpo_term_dto';
 
 @Component({
   selector: 'app-hpo-modifier-menu',
@@ -17,8 +16,11 @@ import { IconComponent } from "ng-hpo-uikit";
   styleUrls: ['./hpo-modifier-menu.scss'],
 })
 export class HpoModifierMenuComponent implements OnInit {
-  private modifierService = inject(HpoModifierService);
+  // private modifierService = inject(HpoModifierService);
   private elementRef = inject(ElementRef);
+
+  filterFn = input.required<(query: string) => HpoTermDuplet[]>();
+  initFn = input.required<() => Promise<void>>();
 
   cellData = input.required<any>();
   modifierSelected = output<string>();
@@ -31,13 +33,20 @@ export class HpoModifierMenuComponent implements OnInit {
   quickModifiers = ['Mild', 'Moderate', 'Severe'];
 
   async ngOnInit() {
-    await this.modifierService.ensureModifiersLoaded();
-    this.options.set(this.modifierService.filterLocalTerms(''));
+    const init = this.initFn();
+    if (init) {
+      await init();
+    }
+    const filter = this.filterFn();
+    this.options.set(filter(''));
+
+   // await this.modifierService.ensureModifiersLoaded();
+   // this.options.set(this.modifierService.filterLocalTerms(''));
 
     this.control.valueChanges.subscribe((value) => {
       const query = typeof value === 'string' ? value : '';
-      const filtered = this.modifierService.filterLocalTerms(query);
-      this.options.set(filtered);
+      //const filtered = this.modifierService.filterLocalTerms(query);
+      this.options.set(filter(query));
     });
   }
 

@@ -476,6 +476,7 @@ fn add_new_row_to_cohort(
         .map_err(|_| "Failed to acquire lock on HPO State".to_string())?;
     let hpo = singleton.get_hpo()
         .ok_or_else(|| "HPO not initialized".to_string())?;
+    println!("add_new_row_to_cohort -- {:?}", hpo_annotations);
     ga4ghphetools::factory::add_new_row_to_cohort(hpo, individual_data, hpo_annotations, variant_key_list, cohort_data)
 }
 

@@ -122,7 +122,6 @@ export class QcComponent implements OnInit {
     try {
       const report = await this.configService.compareTwoPhenopackets(files.path1, files.path2);
       this.comparisonResult.set(report);
-      console.log(report);
     } catch (err) {
       this.errorMessage.set('Failed to compare phenopackets.');
       this.notificationService.showError(`Failed to compare phenopackets: ${err}.`);

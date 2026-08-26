@@ -971,9 +971,7 @@ export class TableEditorComponent {
     action();
     setTimeout(() => {
       this.contextMenuCellVisible = false;
-      console.log('Menu closed after action');
     }, 0);
-    console.log('handle menu');
   }
 
   editCellDialogData = signal<CellEditData | null>(null);
@@ -1325,7 +1323,6 @@ export class TableEditorComponent {
    * This is applied from the app-column-context-menu component depending on the choice of the user.
    */
   async applyNamedTransform(colIndex: number | null, rawTransform: TransformType): Promise<void> {
-    console.log('applyNamedTransform rawtransform = ', rawTransform);
     const dto = this.etl_service.etlDto();
     if (colIndex == null || !dto) return;
     let transform: TransformType = rawTransform;
@@ -1333,7 +1330,6 @@ export class TableEditorComponent {
       const matchingKey = Object.keys(TransformType).find(
         (key) => TransformType[key as keyof typeof TransformType] === rawTransform,
       );
-      console.log('Matchking key', matchingKey);
       if (matchingKey) {
         transform = TransformType[matchingKey as keyof typeof TransformType];
       }
@@ -1618,40 +1614,6 @@ export class TableEditorComponent {
     }
     return header.hpoTerms[0];
   }
-
-  /*
-  ALSO DELETE hpoheader.component!!!!!
-  async processHpoColumn(colIndex: number | null): Promise<void> {
-    const dto = this.etl_service.etlDto();
-    if (colIndex == null || !dto || colIndex < 0) {
-      this.notificationService.showError('Invalid column index');
-      return;
-    }
-    const column = dto.table.columns[colIndex];
-    let hpoTerm: HpoTermDuplet;
-    try {
-      hpoTerm = this.getSingleHpoTerm(column.header);
-    } catch (e) {
-      this.notificationService.showError(String(e));
-      return;
-    }
-    // Unique values from ORIGINAL data
-    const uniqueValues = Array.from(
-      new Set(column.values.map((v) => v.original.trim()).filter(Boolean)),
-    );
-    const dialogRef = this.dialog.open(HpoHeaderComponent, {
-      data: {
-        header: column.header.original,
-        hpoId: hpoTerm.hpoId,
-        hpoLabel: hpoTerm.hpoLabel,
-        uniqueValues,
-      },
-    });
-
-    const mapping: HpoMappingResult | undefined = await firstValueFrom(dialogRef.afterClosed());
-    this.updateColumnWithMap(colIndex, mapping);
-    console.log('consider more code to update title of column');
-  }*/
 
   /** Reset column to RAW and trigger cell signals if needed */
   resetColumnToRaw(colIndex: number | null): void {
@@ -1950,7 +1912,6 @@ export class TableEditorComponent {
    * is implemented in the template itself.
    */
   openHeaderMenu(data: { event: MouseEvent; index: number; header: any }): void {
-    console.log('openHeaderMenu data=', data);
     this.headerMenuState.set({
       x: data.event.clientX,
       y: data.event.clientY,

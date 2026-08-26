@@ -39,6 +39,7 @@ import { CohortViewModel } from '../services/cohort-view-model.service';
 import { TableContext, TableInteractionService } from '../services/table-interaction.service';
 import { ChangeDetectorRef } from '@angular/core';
 import { Observable, of } from 'rxjs';
+import { HpoModifierService } from '../services/hpo_modifier_service';
 
 interface Option {
   label: string;
@@ -105,9 +106,14 @@ export class PtTemplateComponent {
   readonly hpoGroupKeys = computed(() => Array.from(this.hpoGroups().keys()));
   private configService = inject(ConfigService);
   private ageService = inject(AgeService);
+  modifierService = inject(HpoModifierService);
   private notificationService = inject(NotificationService);
   readonly ageEntries = this.ageService.selectedTerms;
   protected showAgeDialog = signal<boolean>(false);
+
+  filterModifiers = (query: string) => this.modifierService.filterLocalTerms(query);
+  initModifiers = () => this.modifierService.ensureModifiersLoaded();
+  getModifierLabel = (modId: string) => this.modifierService.getModifierLabel(modId);
 
   @ViewChild(AddageComponent) addagesComponent!: AddageComponent;
   @ViewChild('tableWrapper') tableWrapper!: ElementRef<HTMLDivElement>;
@@ -582,8 +588,6 @@ export class PtTemplateComponent {
   @HostListener('document:click', ['$event'])
   @HostListener('document:contextmenu', ['$event'])
   closeContextMenu(event: MouseEvent): void {
-      console.log('[closeContextMenu] event type:', event.type, 'target:', event.target);
-
     const menu = this.contextMenuElement?.nativeElement;
     const individualMenu = this.individualContextMenuElement?.nativeElement;
     const hpoContextMenu = this.hpoContextMenu?.nativeElement;
@@ -594,9 +598,7 @@ export class PtTemplateComponent {
       (individualMenu && individualMenu.contains(target)) ||
       (hpoContextMenu && hpoContextMenu.contains(target)) || 
       (rowInfoPopup && rowInfoPopup.contains(target));
-    console.log('[closeContextMenu] inside a menu?', inside);
     if (inside) return;
-    console.log('[closeContextMenu] resetting all menu visibility flags');
     this.contextMenuVisible = false;
     this.individualContextMenuVisible = false;
     this.closeRowInfo();
@@ -814,14 +816,11 @@ export class PtTemplateComponent {
   onIndividualRightClick(event: MouseEvent, rowId: string): void {
     event.preventDefault(); // stop default menu of browser
     event.stopPropagation();
-    console.log('[individual-rclick] fired for row', rowId);
     this.contextRowId = rowId;
     const { x, y } = this.configService.calculateMenuPosition(event.clientX, event.clientY);
     this.individualMenuX = x;
     this.individualMenuY = y;
     this.individualContextMenuVisible = true;
-      console.log('[individual-rclick] set visible=true', { x, y });
-
   }
 
   // Just show the row that the user clicks on

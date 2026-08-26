@@ -153,6 +153,7 @@ export class AddcaseComponent {
     const pmid = this.pmidDto();
     const demo = this.demographData();
     const hpoAnn = this.hpoAnnotations();
+    console.log(hpoAnn);
     const allelesArr = this.alleles();
     if (!pmid.pmid) {
       this.notificationService.showError('Cannot submit new row without PMID');
@@ -191,7 +192,7 @@ export class AddcaseComponent {
         this.notificationService.showError(this.errorString);
       }
     } else {
-      this.notificationService.showError('Attempt to add new row with null template_dto');
+      this.notificationService.showError('Attempt to add new row with null cohort_dto');
     }
     this.resetAllInputVars();
     /* After creating a new row, we jump to the template editor component. */

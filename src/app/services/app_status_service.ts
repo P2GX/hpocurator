@@ -50,7 +50,6 @@ export class AppStatusService {
 
   private async listen_close() {
     await listen('close-requested', async () => {
-      console.log('Listen close');
       if (this.hasUnsavedWork()) {
         const confirmed = await ask('You have unsaved changes. Quit anyway?', {
           title: 'Unsaved work',

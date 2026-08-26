@@ -66,6 +66,9 @@
                   <app-hpo-annotation-panel
                     [cellData]="currentCellValue(value)"
                     [columnTitle]="header()"
+                    [filterModifiersFn]="filterModifiers"
+                    [initModifiersFn]="initModifiers"
+                    [getModifierLabelFn]="getModifierLabel"
                     (dataChanged)="onCellDetailChanged(value, $event)"
                     (requestNewOnset)="openGlobalAgeDialog()"
                   />

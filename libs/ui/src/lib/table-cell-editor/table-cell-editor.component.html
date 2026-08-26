@@ -78,7 +78,7 @@
       <div class="modifiers-list">
         @for (mod of cellData().modifiers; track mod) {
           <span class="modifier-chip">
-            {{ modifierService.getModifierLabel(mod) }}
+            {{ getModifierLabelFn()(mod)}}
             <button
               type="button"
               class="btn-remove-modifier"
@@ -95,7 +95,11 @@
     </section>
 
     <section class="panel-section add-modifiers-section">
-      <app-hpo-modifier-menu [cellData]="cellData()" (modifierSelected)="addModifier($event)">
+      <app-hpo-modifier-menu 
+        [cellData]="cellData()" 
+        [filterFn]="filterModifiersFn()"
+        [initFn]="initModifiersFn()"
+        (modifierSelected)="addModifier($event)">
       </app-hpo-modifier-menu>
     </section>
   </div>

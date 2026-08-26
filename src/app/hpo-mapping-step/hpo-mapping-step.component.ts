@@ -1,9 +1,10 @@
-import { Component, input, output, effect, viewChild, ElementRef, signal } from "@angular/core";
+import { Component, input, output, effect, viewChild, ElementRef, signal, inject } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 import { TableCellEditorComponent } from "../../../libs/ui/src/lib/table-cell-editor/table-cell-editor.component";
 import { CellValue, HpoMappingResult } from "../../../libs/ui/src/lib/models/hpo_term_dto";
 import { AddageComponent } from "../addages/addage.component";
+import { HpoModifierService } from "../services/hpo_modifier_service";
 
 type QuickState = 'Observed' | 'Excluded' | 'Na';
 
@@ -30,6 +31,11 @@ export class HpoMappingStepComponent {
   uniqueValues = input.required<string[]>();
   private detailDialogEl = viewChild<ElementRef<HTMLDialogElement>>('detailDialog');
   showAgeDialog = signal(false);
+  modifierService = inject(HpoModifierService);
+
+  filterModifiers = (query: string) => this.modifierService.filterLocalTerms(query);
+  initModifiers = () => this.modifierService.ensureModifiersLoaded();
+  getModifierLabel = (modId: string) => this.modifierService.getModifierLabel(modId);
 
   OBSERVED_HINTS = new Set([
     '+', 'yes', 'y', 'true', '1', 'present', 'pos', 'positive', 'obs', 'observed'
@@ -155,7 +161,6 @@ export class HpoMappingStepComponent {
   }
 
   openGlobalAgeDialog(): void {
-    console.log("openGlobalAgeDialog coming from request new onset")
     this.showAgeDialog.set(true);
   }
 

@@ -200,12 +200,10 @@ export class TableEditorHeader implements OnInit {
   openPmid = signal(false);
 
   openPubmedDialog(): void {
-    console.log('openPubmedDialog');
     this.openPmid.set(true);
   }
 
   handleClosePmidDialog(dto: PmidDto | null): void {
-    console.log('Handle close PMID, dt=', dto);
     if (!dto) {
       this.notificationService.showError('Could not retrieve PMID');
       return;

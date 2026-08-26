@@ -439,6 +439,9 @@
         <app-hpo-annotation-panel
           [cellData]="ctx.cell"
           [columnTitle]="currentHpoLabel()"
+          [filterModifiersFn]="filterModifiers"
+          [initModifiersFn]="initModifiers"
+          [getModifierLabelFn]="getModifierLabel"
           (requestNewOnset)="openGlobalAgeDialog(ctx)"
           (dataChanged)="handleTableDataUpdate($event)"
         >
