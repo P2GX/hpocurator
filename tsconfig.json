@@ -8,7 +8,8 @@
     "noFallthroughCasesInSwitch": true,
     "esModuleInterop": true,
     "useDefineForClassFields": false,
-    "types": ["@tauri-apps/api"]
+    "types": ["@tauri-apps/api"],
+    "rootDir": ".",
   },
   "angularCompilerOptions": {
     "enableI18nLegacyMessageIdFormat": false,

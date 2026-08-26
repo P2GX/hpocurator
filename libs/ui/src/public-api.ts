@@ -9,6 +9,7 @@ export * from './lib/models/moi-abbreviations';
 export * from './lib/individual-comment/individual-comment.component';
 
 export * from './lib/confirm/confirmdialog.component';
+export * from './lib/moi-badges/moi-badges.component';
 export * from './lib/models/hpo_term_dto';
 export * from './lib/hpo-popup-dialog/app-hpo-popup-dialog.component';
 export * from './lib/table-progress-bar/table-progress-bar.component';

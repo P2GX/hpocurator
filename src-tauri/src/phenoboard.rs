@@ -273,8 +273,6 @@ impl PhenoboardSingleton {
             let json = serde_json::to_string_pretty(&cohort_dto).map_err(|_|"Could not serialize to JSON".to_string())?;
             let mut file = File::create(&path).map_err(|_|"Could not create file".to_string())?;
             file.write_all(json.as_bytes()).map_err(|_|"Could not write file".to_string())?;
-
-            println!("Saved JSON to {:?}", path);
         } else {
             return Err("Save cancelled by user".to_string());
         };

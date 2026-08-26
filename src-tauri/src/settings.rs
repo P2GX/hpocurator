@@ -33,7 +33,6 @@ impl HpoCuratorSettings {
             return Err(format!("Did not find file at {hp_json}"));
         }
         self.hp_json_file = Some(hp_json.to_string());
-        println!("set_hp_json_path to {}", hp_json);
         self.save_settings()?;
         Ok(())
     }
@@ -87,10 +86,8 @@ impl HpoCuratorSettings {
 
     pub fn save_settings(&self) -> Result<(), String> {
         let config_file = get_config_file()?;
-        println!("{:?}", config_file);
         let toml_string = toml::to_string_pretty(&self)
             .map_err(|e| format!("Could not serialize settings: {}", e))?;
-        println!("Sainv settings toml = {:?}", toml_string);
         let mut file = File::create(config_file)
             .map_err(|e| format!("Could not create settings file: {}", e))?;
 

@@ -1,7 +1,6 @@
 import { Component, input, output, signal } from '@angular/core';
-import { DiseaseData, ModeOfInheritance } from '@workspace/ui';
+import { DiseaseData, ModeOfInheritance, MoiBadgesComponent } from '@workspace/ui';
 import { MoiSelector } from '../moiselector/moiselector.component';
-import { MoiBadgesComponent } from "libs/ui/src/lib/moi-badges/moi-badges.component"; 
 
 @Component({
   selector: 'app-moi-summary-dialog',

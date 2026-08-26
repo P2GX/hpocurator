@@ -92,7 +92,6 @@ mod tests {
         let result = retr.get().await;
         assert!(result.is_ok());
         let dto = result.unwrap();
-        println!("{}", &dto.title);
         assert!(dto.title.contains("PIGV"));
         Ok(())
     }

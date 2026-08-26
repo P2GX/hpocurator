@@ -29,7 +29,7 @@ import {
   NotificationService,
 } from 'ng-hpo-uikit';
 import { catchError, from, Observable, of } from 'rxjs';
-import { ColumnTableDto, EtlDto } from 'libs/ui/src/lib/models/transform-operations';
+import { ColumnTableDto, EtlDto } from '@workspace/ui';
 
 @Injectable({
   providedIn: 'root',

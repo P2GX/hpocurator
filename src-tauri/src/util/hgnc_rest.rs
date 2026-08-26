@@ -6,7 +6,6 @@ use crate::util::HgncBundle;
 
 pub async fn fetch_gene_data(symbol: &str) -> Result<HgncBundle, Box<dyn std::error::Error>> {
     let url = format!("https://rest.genenames.org/fetch/symbol/{}", symbol);
-    println!("{}", url);
     let client = reqwest::Client::new();
 
     let res = client

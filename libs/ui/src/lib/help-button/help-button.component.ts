@@ -11,7 +11,7 @@ import { openUrl } from '@tauri-apps/plugin-opener';
 @Component({
   selector: 'app-help-button',
   standalone: true,
-  encapsulation: ViewEncapsulation.None, // keep, so .help-bubble styling can escape the host like the old overlay panelClass did
+  encapsulation: ViewEncapsulation.None,
   templateUrl: './help-button.component.html',
   styleUrl: './help-button.component.scss',
 })

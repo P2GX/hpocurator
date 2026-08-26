@@ -10,10 +10,9 @@
     "module": "preserve",
     "lib": ["ES2022", "dom"],
     "skipLibCheck": true,
-    "baseUrl": ".",
-     "preserveSymlinks": true,
+    "preserveSymlinks": true,
     "paths": {
-      "@workspace/ui": ["libs/ui/src/public-api.ts"],
+      "@workspace/ui": ["./libs/ui/src/public-api.ts"],
     }
   }
 }
