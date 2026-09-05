@@ -153,7 +153,6 @@ export class AddcaseComponent {
     const pmid = this.pmidDto();
     const demo = this.demographData();
     const hpoAnn = this.hpoAnnotations();
-    console.log(hpoAnn);
     const allelesArr = this.alleles();
     if (!pmid.pmid) {
       this.notificationService.showError('Cannot submit new row without PMID');

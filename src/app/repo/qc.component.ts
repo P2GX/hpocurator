@@ -63,6 +63,8 @@ export class QcComponent implements OnInit {
       this.notificationService.showError(
         `Could not load QC data: ${err instanceof Error ? err : String(err)}`,
       );
+    } finally {
+      this.loading.set(false);
     }
   }
 

@@ -8,7 +8,7 @@ use std::{collections::HashSet, env, fs::File, io::Write, path::{Path, PathBuf},
 
 use ontolius::{io::OntologyLoaderBuilder, ontology::{MetadataAware, OntologyTerms, csr::FullCsrOntology}};
 use fenominal::{AutoCompleter, Fenominal, FenominalSentence, OntologyMatch};
-use ga4ghphetools::{dto::{cohort_dto::{CohortData, CohortType, DiseaseData}, etl_dto::EtlDto, hpo_term_dto::{ CellValueInner, HpoTermDuplet}, variant_dto::VariantDto}, hpoa, repo::repo_qc::RepoQc, tauri::models::HierarchyMapItem};
+use ga4ghphetools::{dto::{cohort_dto::{CohortData, CohortType, DiseaseData}, etl_dto::EtlDto, hpo_term_dto::{ CellValueInner, HpoTermDuplet}, variant_dto::VariantDto}, hpoa, RepoQc, HierarchyMapItem};
 use ga4ghphetools;
 use rfd::FileDialog;
 use crate::dto::status_dto::StatusDto;
@@ -116,7 +116,7 @@ impl PhenoboardSingleton {
 
     pub fn get_modifiers(&self) -> Result<Vec<HpoTermDuplet>, String> {
         let hpo = self.ontology.as_ref().ok_or_else(|| "HPO not initialized".to_string())?;
-        ga4ghphetools::hpo::get_modifiers(hpo.clone())
+        ga4ghphetools::get_modifiers(hpo.clone())
     }
 
 
@@ -170,8 +170,8 @@ impl PhenoboardSingleton {
     ) -> Result<CohortData, String> {
         match Self::get_parent_dir(json_file) {
             Some(project_dir) => {
-                ga4ghphetools::persistence::initialize_project_dir(project_dir)?;
-                ga4ghphetools::factory::load_json_cohort(json_file)
+                ga4ghphetools::initialize_project_dir(project_dir)?;
+                ga4ghphetools::load_json_cohort(json_file)
             },
             None => Err("Could not load JSON template because we could not initialize the parent directory".to_string()),
         }
@@ -241,7 +241,7 @@ impl PhenoboardSingleton {
         pub fn get_hpo_parent_and_children_terms(&self, term_id: &str) -> Result<HierarchyMapItem, String> {
             match &self.ontology {
                 Some(hpo) => {
-                    let hm = ga4ghphetools::tauri::parent_child::get_hpo_parent_and_children_terms(term_id, hpo.clone());
+                    let hm = ga4ghphetools::get_hpo_parent_and_children_terms(term_id, hpo.clone());
                     Ok(hm)
                 },
                 None => Err("Could not retrieve parent/child hierarchy".to_string())
@@ -250,7 +250,7 @@ impl PhenoboardSingleton {
 
     /// create name of JSON cohort template file, {gene}_{disease}_individuals.json
     fn extract_template_name(&self, cohort_dto: &CohortData) -> Result<String, String> {
-        ga4ghphetools::factory::extract_template_name(cohort_dto)
+        ga4ghphetools::extract_template_name(cohort_dto)
     }
 
     pub fn save_template_json(&self, cohort_dto: CohortData) -> Result<(), String> {
@@ -348,19 +348,29 @@ impl PhenoboardSingleton {
             Err(e) => { return Err(format!("Cannot save phenopackets without ORCID id: {}", e)); }
         };
         match &self.ontology {
-            Some(hpo) =>  ga4ghphetools::ppkt::write_phenopackets(cohort, path, orcid, hpo.clone(), overwrite),
+            Some(hpo) =>  ga4ghphetools::write_phenopackets(cohort, path, orcid, hpo.clone(), overwrite),
             None => Err("Cannot export phenopackets because HPO not initialized".to_string()),
         }
     }
 
 
+
     pub fn get_repo_qc(&self) -> Result<RepoQc, String> {
-        let out_dir = match self.get_phenopackets_output_dir() {
-            Ok(dir) => dir,
-            Err(e) =>  { return Err(e);},
-        };
-        ga4ghphetools::repo::get_repo_qc(&out_dir)
+        let out_dir = self.get_phenopackets_output_dir()?;
+        println!("get repo qc out={}", out_dir.to_string_lossy());
+        let hpo = self.get_hpo().ok_or_else(|| "Could not get HPO".to_string())?;
+        ga4ghphetools::get_repo_qc(&out_dir, hpo.clone())
     }
+
+
+    pub fn update_all_ppkt(&self) -> Result<Vec<String>, String> {
+        let out_dir =  self.get_phenopackets_output_dir()?;
+        let hpo = self.get_hpo().ok_or_else(|| "Could not get HPO".to_string())?;
+        //ga4ghphetools::repo::update_all_ppkt(&out_dir, hpo.clone())
+        eprint!("Needs to be wired!");
+        Ok(vec![])
+    }
+
 
     /// Exports the HPOA (Human Phenotype Ontology Annotations) for a given cohort.
     ///
@@ -410,7 +420,7 @@ impl PhenoboardSingleton {
             Some(onto) => onto.clone(),
             None => {return Err("HPO ontology object not initialized".to_string()); }
         };
-        ga4ghphetools::factory::add_hpo_term_to_cohort(hpo_id, hpo_label, hpo, cohort_dto)
+        ga4ghphetools::add_hpo_term_to_cohort(hpo_id, hpo_label, hpo, cohort_dto)
     }
 
     /// Generate a CohortType from seed HPO terms and some information about the disease & gene
@@ -425,7 +435,7 @@ impl PhenoboardSingleton {
             Some(onto) => onto.clone(),
             None => { return Err("HPO object not initialized".to_string()); }
         };
-        ga4ghphetools::factory::create_new_cohort_data(cohort_type, dto, acronym, hpo)     
+        ga4ghphetools::create_new_cohort_data(cohort_type, dto, acronym, hpo)     
     }
 
 
@@ -450,7 +460,7 @@ impl PhenoboardSingleton {
         &self,
         cohort_dto: CohortData
     ) -> Result<Vec<VariantDto>, String> {
-        ga4ghphetools::variant::analyze_variants(cohort_dto)
+        ga4ghphetools::analyze_variants(cohort_dto)
     }
 
     pub fn process_allele_column<F>(
@@ -461,7 +471,7 @@ impl PhenoboardSingleton {
     ) -> Result<EtlDto, String> where F: FnMut(u32, u32) {
    
         match &self.ontology {
-            Some(hpo) =>  ga4ghphetools::etl::process_allele_column(hpo.clone(),etl, col, progress_cb),
+            Some(hpo) =>  ga4ghphetools::process_allele_column(hpo.clone(),etl, col, progress_cb),
             None => Err("HPO not initialized".to_string()),
         }
        

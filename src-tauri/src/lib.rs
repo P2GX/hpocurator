@@ -5,9 +5,9 @@ mod hpo;
 mod settings;
 mod util;
 
-use ga4ghphetools::{dto::{cohort_dto::{CohortData, CohortType, DiseaseData, IndividualData}, etl_dto::{ColumnTableDto, EtlDto}, hgvs_variant::HgvsVariant, hpo_term_dto::{HpoTermData, HpoTermDuplet}, structural_variant::StructuralVariant, variant_dto::VariantDto}, factory::excel, repo::{ComparisonReport, repo_qc::RepoQc}, tauri::models::HierarchyMapItem};
+use ga4ghphetools::{dto::{cohort_dto::{CohortData, CohortType, DiseaseData, IndividualData}, etl_dto::{ColumnTableDto, EtlDto}, hgvs_variant::HgvsVariant, hpo_term_dto::{HpoTermData, HpoTermDuplet}, structural_variant::StructuralVariant, variant_dto::VariantDto}, ComparisonReport, RepoQc, HierarchyMapItem};
 use ga4ghphetools::dto::intergenic_variant::IntergenicHgvsVariant;
-use ga4ghphetools::tauri::{pick_file_and_process, load_ontology, OntologyLoadEvent};
+use ga4ghphetools::{pick_file_and_process, load_ontology, OntologyLoadEvent};
 use ontolius::ontology::MetadataAware;
 use ontolius::ontology::OntologyTerms;
 use phenoboard::PhenoboardSingleton;
@@ -83,7 +83,7 @@ pub fn run() {
             save_external_template_json,
             save_html_report,
             sort_cohort_by_rows,
-           // submit_autocompleted_hpo_term,
+            update_all_ppkt,
             validate_hgvs_variant,
             validate_intergenic_variant,
             validate_structural_variant,
@@ -274,7 +274,7 @@ fn create_new_melded_cohort(
     let hpo = singleton.get_hpo()
         .ok_or_else(|| "HPO not initialized".to_string())?;
     let hpo_version = hpo.version().to_string();
-    Ok(ga4ghphetools::factory::create_new_melded_cohort(diseases, acronym, &hpo_version))
+    Ok(ga4ghphetools::create_new_melded_cohort(diseases, acronym, &hpo_version))
 }
 
 
@@ -360,7 +360,7 @@ fn validate_template(
         .map_err(|_| "Failed to acquire lock on HPO State".to_string())?;
     let hpo = singleton.get_hpo()
         .ok_or_else(|| "Could not create CohortData because HPO was not initialized".to_string())?;
-    ga4ghphetools::factory::qc_assessment(hpo.clone(), &cohort_dto).map_err(|e| e.to_string())
+    ga4ghphetools::qc_assessment(hpo.clone(), &cohort_dto).map_err(|e| e.to_string())
 }
 
 #[tauri::command]
@@ -371,7 +371,7 @@ fn sanitize_cohort_data(
         .map_err(|_| "Failed to acquire lock on HPO State".to_string())?;
     let hpo = singleton.get_hpo()
         .ok_or_else(|| "HPO not initialized".to_string())?;
-    ga4ghphetools::factory::sanitize_cohort_data(hpo.clone(), &cohort_dto)
+    ga4ghphetools::sanitize_cohort_data(hpo.clone(), &cohort_dto)
 }
 
 
@@ -389,7 +389,7 @@ fn save_cohort_data(
 #[tauri::command]
 fn sort_cohort_by_rows(dto: CohortData) 
 -> CohortData {
-    ga4ghphetools::factory::sort_rows(&dto)
+    ga4ghphetools::sort_rows(&dto)
 }
 
 
@@ -436,7 +436,7 @@ fn export_ppkt(
         (orcid, hpo)
     };
     let path = std::path::PathBuf::from(&directory);
-    ga4ghphetools::ppkt::write_phenopackets(cohort, path, orcid, hpo, overwrite)
+    ga4ghphetools::write_phenopackets(cohort, path, orcid, hpo, overwrite)
 }
 
 #[tauri::command]
@@ -476,7 +476,7 @@ fn add_new_row_to_cohort(
         .map_err(|_| "Failed to acquire lock on HPO State".to_string())?;
     let hpo = singleton.get_hpo()
         .ok_or_else(|| "HPO not initialized".to_string())?;
-    ga4ghphetools::factory::add_new_row_to_cohort(hpo, individual_data, hpo_annotations, variant_key_list, cohort_data)
+    ga4ghphetools::add_new_row_to_cohort(hpo, individual_data, hpo_annotations, variant_key_list, cohort_data)
 }
 
 
@@ -487,14 +487,14 @@ fn validate_hgvs_variant(
     transcript: &str,
     allele: &str) 
 -> Result<HgvsVariant, String> {
-    ga4ghphetools::variant::validate_hgvs_variant(symbol, hgnc, transcript, allele)
+    ga4ghphetools::validate_hgvs_variant(symbol, hgnc, transcript, allele)
 }
 
 #[tauri::command]
 fn validate_structural_variant(
     variant_dto: VariantDto) 
 -> Result<StructuralVariant, String> {
-    ga4ghphetools::variant::validate_structural_variant(variant_dto)
+    ga4ghphetools::validate_structural_variant(variant_dto)
 }
 
 #[tauri::command]
@@ -504,7 +504,7 @@ fn validate_intergenic_variant(
     allele: String)
 -> Result<IntergenicHgvsVariant, String> {
     let vsto = VariantDto::hgvs_g(&allele,  &hgnc,  &symbol); 
-    ga4ghphetools::variant::validate_intergenic_variant(vsto)
+    ga4ghphetools::validate_intergenic_variant(vsto)
   }
 
 
@@ -524,7 +524,7 @@ async fn load_external_excel(
             Some(file) => {
                 let singleton = state_handle.phenoboard.lock().unwrap();
                 let path_str = file.to_string();
-                match excel::read_external_excel_to_dto(&path_str, row_based) {
+                match ga4ghphetools::read_external_excel_to_dto(&path_str, row_based) {
                     Ok(dto) => {
                         let status = singleton.get_status();
                         let _ = app_handle.emit("backend_status", &status);
@@ -697,7 +697,7 @@ async  fn get_cohort_data_from_etl_dto(
         .map_err(|_| "Failed to acquire lock on HPO State".to_string())?;
     let hpo = singleton.get_hpo()
         .ok_or_else(|| "Could not create CohortData because HPO was not initialized".to_string())?;
-    ga4ghphetools::etl::get_cohort_data_from_etl_dto(hpo.clone(), dto)
+    ga4ghphetools::get_cohort_data_from_etl_dto(hpo.clone(), dto)
 }
 
 
@@ -713,7 +713,7 @@ async fn merge_cohort_data_from_etl_dto(
         .map_err(|_| "Failed to acquire lock on HPO State".to_string())?;
     let hpo = singleton.get_hpo()
         .ok_or_else(|| "Could not create CohortData because HPO was not initialized".to_string())?;
-    ga4ghphetools::factory::merge_cohort_data_from_etl_dto(previous, transformed, hpo)
+    ga4ghphetools::merge_cohort_data_from_etl_dto(previous, transformed, hpo)
 }
 
 #[tauri::command]
@@ -725,7 +725,7 @@ async fn get_hpo_terms_by_toplevel(
         .map_err(|_| "Failed to acquire lock on HPO State".to_string())?;
     let hpo = singleton.get_hpo()
         .ok_or_else(|| "Could not create CohortData because HPO was not initialized".to_string())?;
-    ga4ghphetools::hpo::get_hpo_terms_by_toplevel(cohort, hpo)
+    ga4ghphetools::get_hpo_terms_by_toplevel(cohort, hpo)
 }
 
 /// Save a rendered HTML report for the given cohort data.
@@ -773,7 +773,7 @@ async fn save_html_report(
                 if path.extension().map_or(true, |ext| ext != "html") {
                     path.set_extension("html");
                 }
-                ga4ghphetools::export::render_html(cohort, hpo, &path)
+                ga4ghphetools::render_html(cohort, hpo, &path)
                     .map_err(|e| format!("Failed to render HTML: {}", e))?;
                 // Confirm success
                 app_handle.emit("htmlReportSaved", "success").ok();
@@ -920,6 +920,16 @@ async fn compare_two_phenopackets(
         .map_err(|_| "Failed to acquire lock on phenoboard State".to_string())?;
     let hpo = singleton.get_hpo()
         .ok_or_else(|| "Could not acquire HPO reference".to_string())?;
-    ga4ghphetools::repo::compare_two_phenopackets(path1, path2, hpo.clone())
+    ga4ghphetools::compare_two_phenopackets(path1, path2, hpo.clone())
+}
+
+#[tauri::command]
+async  fn update_all_ppkt(
+    state: tauri::State<'_, Arc<AppState>>,
+) -> Result<Vec<String>, String> {
+    let singleton = state.phenoboard.lock()
+        .map_err(|_| "Failed to acquire lock on HPO State".to_string())?;
+    singleton.update_all_ppkt()?;
+    Ok(vec![])
 }
 
